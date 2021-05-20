@@ -3,7 +3,7 @@
 
 #define OSUP_API
 
-#include "./osup_types.h"
+#include "osup_types.h"
 
 typedef enum {
   OSUP_SAMPLESET_DEFAULT = 0,
