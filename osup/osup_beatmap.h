@@ -3,6 +3,8 @@
 
 #define OSUP_API
 
+#include <stdio.h>
+
 #include "osup_types.h"
 
 typedef enum {
@@ -19,12 +21,19 @@ typedef enum {
   OSUP_OVERLAYPOS_ABOVE
 } osup_overlaypos;
 
+typedef enum {
+  OSUP_COUNTDOWN_SPEED_NONE,
+  OSUP_COUNTDOWN_SPEED_NORMAL,
+  OSUP_COUNTDOWN_SPEED_HALF,
+  OSUP_COUNTDOWN_SPEED_DOUBLE
+} osup_countdown_speed;
+
 typedef struct {
   char* AudioFilename;
   osup_int AudioLeadIn;
   char* AudioHash;
   osup_int PreviewTime;
-  osup_int Countdown;
+  osup_countdown_speed Countdown;
   osup_sampleset SampleSet;
   osup_decimal StackLeniency;
   osup_gamemode Mode;
@@ -213,6 +222,16 @@ typedef struct {
   };
   osup_bm_hitobjects HitObjects;
 } osup_bm;
+
+typedef const char* (*osup_bm_callback)(void*);
+
+OSUP_API void osup_beatmap_init(osup_bm* map);
+
+OSUP_API void osup_beatmap_load(osup_bm* map, const char* file);
+OSUP_API void osup_beatmap_load_string(osup_bm* map, const char* string);
+OSUP_API void osup_beatmap_load_callbacks(osup_bm* map,
+                                          osup_bm_callback callback, void* ptr);
+OSUP_API void osup_beatmap_load_stream(osup_bm* map, FILE* stream);
 
 #endif
 
