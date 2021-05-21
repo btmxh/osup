@@ -1,6 +1,8 @@
 #ifndef OSUP_TYPES_H
 #define OSUP_TYPES_H
 
+#define OSUP_API
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -35,6 +37,9 @@ typedef struct {
 } osup_vec2;
 
 typedef enum { OSU, TAIKO, CATCH, MANIA } osup_gamemode;
+
+OSUP_API osup_bool osup_parse_int(const char* begin, const char* end, osup_int* value);
+OSUP_API osup_bool osup_parse_bool(const char* begin, const char* end, osup_bool* value);
 
 #endif
 
