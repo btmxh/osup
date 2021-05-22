@@ -5,14 +5,19 @@
 
 #include <stdio.h>
 
-#include "osup_types.h"
+#include "osup_common.h"
+
+#define OSUP_FLAG(x) (1 << (x))
+#define OSUP_IS_HITCIRCLE(type) (type & OSUP_FLAG(0))
+#define OSUP_IS_SLIDER(type) (type & OSUP_FLAG(1))
+#define OSUP_IS_SPINNER(type) (type & OSUP_FLAG(3))
+#define OSUP_IS_MANIA_HOLD(type) (type & OSUP_FLAG(7))
 
 typedef enum {
   OSUP_SAMPLESET_DEFAULT = 0,
   OSUP_SAMPLESET_NORMAL = 1,
   OSUP_SAMPLESET_SOFT = 2,
   OSUP_SAMPLESET_DRUM = 3,
-  OSUP_SAMPLESET_INVALID = 4
 } osup_sampleset;
 
 typedef enum {
@@ -29,61 +34,61 @@ typedef enum {
 } osup_countdown_speed;
 
 typedef struct {
-  char* AudioFilename;
-  osup_int AudioLeadIn;
-  char* AudioHash;
-  osup_int PreviewTime;
-  osup_countdown_speed Countdown;
-  osup_sampleset SampleSet;
-  osup_decimal StackLeniency;
-  osup_gamemode Mode;
-  osup_bool LetterboxInBreaks;
-  osup_bool StoryFireInFront;
-  osup_bool UseSkinSprites;
-  osup_bool AlwaysShowPlayfield;
-  osup_overlaypos OverlayPosition;
-  char* SkinPreference;
-  osup_bool EpilepsyWarning;
-  osup_int CountdownOffset;
-  osup_bool SpecialStyle;
-  osup_bool WidescreenStoryboard;
-  osup_bool SamplesMatchPlaybackRate;
+  char* audioFilename;
+  osup_int audioLeadIn;
+  char* audioHash;
+  osup_int previewTime;
+  osup_countdown_speed countdown;
+  osup_sampleset sampleSet;
+  osup_decimal stackLeniency;
+  osup_gamemode mode;
+  osup_bool letterboxInBreaks;
+  osup_bool storyFireInFront;
+  osup_bool useSkinSprites;
+  osup_bool alwaysShowPlayfield;
+  osup_overlaypos overlayPosition;
+  char* skinPreference;
+  osup_bool epilepsyWarning;
+  osup_int countdownOffset;
+  osup_bool specialStyle;
+  osup_bool widescreenStoryboard;
+  osup_bool samplesMatchPlaybackRate;
 } osup_bm_general;
 
 typedef struct {
   struct {
     osup_int* elements;
     size_t count;
-  } Bookmarks;
-  osup_decimal DistanceSpacing;
-  osup_decimal BeatDivisor;
-  osup_int GridSize;
-  osup_decimal TimelineZoom;
+  } bookmarks;
+  osup_decimal distanceSpacing;
+  osup_decimal beatDivisor;
+  osup_int gridSize;
+  osup_decimal timelineZoom;
 } osup_bm_editor;
 
 typedef struct {
-  char* Title;
-  char* TitleUnicode;
-  char* Artist;
-  char* ArtistUnicode;
-  char* Creator;
-  char* Version;
-  char* Source;
+  char* title;
+  char* titleUnicode;
+  char* artist;
+  char* artistUnicode;
+  char* creator;
+  char* version;
+  char* source;
   struct {
     char** elements;
     size_t count;
-  } Tags;
-  osup_int BeatmapID;
-  osup_int BeatmapSetID;
+  } tags;
+  osup_int beatmapID;
+  osup_int beatmapSetID;
 } osup_bm_metadata;
 
 typedef struct {
-  osup_decimal HPDrainRate;
-  osup_decimal CircleSize;
-  osup_decimal OverallDifficulty;
-  osup_decimal ApproachRate;
-  osup_decimal SliderMultiplier;
-  osup_decimal SliderTickRate;
+  osup_decimal hpDrainRate;
+  osup_decimal circleSize;
+  osup_decimal overallDifficulty;
+  osup_decimal approachRate;
+  osup_decimal sliderMultiplier;
+  osup_decimal sliderTickRate;
 } osup_bm_difficulty;
 
 typedef enum {
@@ -93,16 +98,13 @@ typedef enum {
 } osup_event_type;
 
 typedef struct {
-  const char* filename;
+  char* filename;
   osup_int xOffset;
   osup_int yOffset;
 } osup_bg_event_params;
 
-typedef struct {
-  const char* filename;
-  osup_int xOffset;
-  osup_int yOffset;
-} osup_video_event_params;
+/* same structure */
+typedef osup_bg_event_params osup_video_event_params;
 
 typedef struct {
   osup_int endTime;
@@ -140,12 +142,12 @@ typedef struct {
 } osup_bm_timingpoints;
 
 typedef struct {
-  struct {
-    osup_rgb* elements;
-    size_t count;
-  } Combo;
-  osup_rgb SliderTrackOverride;
-  osup_rgb SliderBorder;
+  /* i'm not sure if there's a limit for the number of combo colors but it's
+   * probably limited to 8 or sth, also this is 0-indexed, so Combo1 will be in
+   * combos[0] */
+  osup_rgb combos[16];
+  osup_rgb sliderTrackOverride;
+  osup_rgb sliderBorder;
 } osup_bm_colors;
 
 typedef osup_bm_colors osup_bm_colours;
@@ -168,7 +170,7 @@ typedef enum {
 typedef struct {
   osup_slider_curve curveType;
   struct {
-    osup_vec2 elements;
+    osup_vec2* elements;
     size_t count;
   } curvePoints;
   osup_int slides;
@@ -191,6 +193,9 @@ typedef struct {
   osup_int endTime;
 } osup_spinner_params;
 
+/* same structure */
+typedef osup_spinner_params osup_mania_hold_params;
+
 typedef struct {
   osup_int x;
   osup_int y;
@@ -201,6 +206,7 @@ typedef struct {
   union {
     osup_slider_params slider;
     osup_spinner_params spinner;
+    osup_mania_hold_params maniaHold;
   };
 } osup_hitobject;
 
@@ -210,28 +216,27 @@ typedef struct {
 } osup_bm_hitobjects;
 
 typedef struct {
-  osup_bm_general General;
-  osup_bm_editor Editor;
-  osup_bm_metadata Metadata;
-  osup_bm_difficulty Difficulty;
-  osup_bm_events Events;
-  osup_bm_timingpoints TimingPoints;
+  osup_bm_general general;
+  osup_bm_editor editor;
+  osup_bm_metadata metadata;
+  osup_bm_difficulty difficulty;
+  osup_bm_events events;
+  osup_bm_timingpoints timingPoints;
   union {
-    osup_bm_colours Colours;
-    osup_bm_colors Colors;
+    osup_bm_colours colours;
+    osup_bm_colors colors;
   };
-  osup_bm_hitobjects HitObjects;
+  osup_bm_hitobjects hitObjects;
 } osup_bm;
 
 typedef const char* (*osup_bm_callback)(void*);
 
-OSUP_API void osup_beatmap_init(osup_bm* map);
-
-OSUP_API void osup_beatmap_load(osup_bm* map, const char* file);
-OSUP_API void osup_beatmap_load_string(osup_bm* map, const char* string);
-OSUP_API void osup_beatmap_load_callbacks(osup_bm* map,
-                                          osup_bm_callback callback, void* ptr);
-OSUP_API void osup_beatmap_load_stream(osup_bm* map, FILE* stream);
+OSUP_API osup_bool osup_beatmap_load(osup_bm* map, const char* file);
+OSUP_API osup_bool osup_beatmap_load_string(osup_bm* map, const char* string);
+OSUP_API osup_bool osup_beatmap_load_callbacks(osup_bm* map,
+                                               osup_bm_callback callback,
+                                               void* ptr);
+OSUP_API osup_bool osup_beatmap_load_stream(osup_bm* map, FILE* stream);
 
 #endif
 
