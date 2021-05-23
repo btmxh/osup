@@ -10,6 +10,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #ifndef OSUP_API
 #ifdef OSUP_PRIVATE
@@ -23,6 +24,26 @@ extern "C" {
 #else
 #define OSUP_API extern
 #endif
+#endif
+
+#ifndef OSUP_NAN
+#ifdef NAN
+#define OSUP_NAN NAN
+#else
+#define OSUP_NAN (0.0 / 0.0)
+#endif
+#endif
+
+#ifndef OSUP_INF
+#ifdef INFINITY
+#define OSUP_INF INFINITY
+#else
+#define OSUP_INF (1.0 / 0.0)
+#endif
+#endif
+
+#ifndef OSUP_NINF
+#define OSUP_NINF (-OSUP_INF)
 #endif
 
 #ifndef OSUP_LIB

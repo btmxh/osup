@@ -106,6 +106,22 @@ OSUP_INTERN osup_bool osup_parse_unsigned_decimal(const char* begin,
                                                   const char* end,
                                                   osup_decimal* value) {
   if (begin > end) return osup_false;
+  /* NaN, +/-Inf */
+  if(*begin == 'N') {
+    if(end - begin == 3 && (begin[1] == 'a' || begin[1] == 'A') && begin[2] == 'N') {
+      *value = OSUP_NAN;
+      return osup_true;
+    }
+  } else if(*begin == 'I') {
+    if(end - begin == 8) {
+      if(!strncmp(&begin[1], "nfinity", 7) || !strncmp(&begin[1], "NFINITY", 7)) {
+        *value = OSUP_INF;
+        return osup_true;
+      }
+    }
+
+    return osup_false;
+  }
   enum { INT, FRACT } part = INT;
   *value = 0.0;
   double mult = 0.1;
@@ -141,6 +157,8 @@ OSUP_INTERN osup_bool osup_parse_unsigned_decimal(const char* begin,
               mult *= 0.1;
           }
           ++it;
+        } else {
+          return osup_false;
         }
     }
   }
