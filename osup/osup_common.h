@@ -35,6 +35,7 @@ extern "C" {
 typedef void (*osup_errcb)(const char*, void*);
 
 OSUP_API void osup_set_error_callback(osup_errcb callback, void* ptr);
+OSUP_API void osup_set_default_error_callback();
 OSUP_LIB void osup_error(const char* error);
 
 #if __STDC_VERSION__ >= 199901L
