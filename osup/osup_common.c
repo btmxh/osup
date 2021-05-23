@@ -34,19 +34,26 @@ OSUP_LIB void osup_error(const char* format, ...) {
 
 char osup_temp_slice[256 + 1] = {};
 OSUP_LIB const char* osup_temp_string_slice(const char* begin, const char* end) {
-  memset(osup_temp_slice, 0, sizeof(osup_temp_slice));
   assert(begin <= end);
   size_t len = end - begin;
   if(len > sizeof(osup_temp_slice) - 1) {
     len = sizeof(osup_temp_slice) - 1;
   }
   memcpy(osup_temp_slice, begin, len);
+  osup_temp_slice[len] = '\0';
   return osup_temp_slice;
 }
 
 OSUP_LIB const char* osup_temp_string_slice_line_terminated(const char* line) {
-  size_t len = strnlen(line, sizeof(osup_temp_slice));
-  memcpy(osup_temp_slice, line, len);
+  size_t i = 0;
+  while(i < sizeof(osup_temp_slice) - 1) {
+    if(osup_is_line_terminator(line[i])) {
+      osup_temp_slice[i] = '\0';
+      break;
+    } else {
+      osup_temp_slice[i] = line[i];
+    }
+  }
   return osup_temp_slice;
 }
 
