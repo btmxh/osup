@@ -3,6 +3,10 @@
 
 #define OSUP_API
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 
 #include "osup_common.h"
@@ -237,6 +241,10 @@ OSUP_API osup_bool osup_beatmap_load_callbacks(osup_bm* map,
                                                osup_bm_callback callback,
                                                void* ptr);
 OSUP_API osup_bool osup_beatmap_load_stream(osup_bm* map, FILE* stream);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
