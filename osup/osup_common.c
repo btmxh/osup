@@ -286,8 +286,7 @@ OSUP_LIB osup_bool osup_split_string_line_terminated_quoted(
       }
       ++(*splitEnd);
     }
-    /* check if the character after the quote is delimiter */
-    return *(*splitEnd + 1) == delimiter;
+    return osup_true;
   } else {
     /* same algorithm from osup_split_string_terminated */
     while (**splitEnd != delimiter && !osup_is_line_terminator(**splitEnd)) {
