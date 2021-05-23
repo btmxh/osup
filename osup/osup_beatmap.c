@@ -489,16 +489,24 @@ OSUP_INTERN osup_bool osup_bm_parse_events_line(osup_bm_ctx* ctx,
     case OSUP_EVENT_TYPE_VIDEO:
       if (!osup_split_string_line_terminated_quoted(',', &elementBegin,
                                                     &elementEnd) ||
-          !osup_strdup(elementBegin, elementEnd, &event->bg.filename) ||
-          !osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
-          !osup_parse_int(elementBegin, elementEnd, &event->bg.xOffset) ||
-          !osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
-          !osup_parse_int(elementBegin, elementEnd, &event->bg.yOffset)) {
+          !osup_strdup(elementBegin, elementEnd, &event->bg.filename)) {
         osup_error(
-            "couldn't get filename/offset from background/video [Events] line: "
+            "couldn't get filename from background/video [Events] line: "
             "%s",
             osup_temp_string_slice_line_terminated(*line));
         return osup_false;
+      }
+
+      if (osup_split_string_line_terminated(',', &elementBegin, &elementEnd)) {
+        if (!osup_parse_int(elementBegin, elementEnd, &event->bg.xOffset) ||
+            !osup_split_string_line_terminated(',', &elementBegin,
+                                               &elementEnd) ||
+            !osup_parse_int(elementBegin, elementEnd, &event->bg.yOffset)) {
+          osup_error(
+              "couldn't get offsets from background/video [Events] line: %s",
+              osup_temp_string_slice_line_terminated(*line));
+          return osup_false;
+        }
       }
       /* there should be no leftover tokens */
       *line = elementEnd;
