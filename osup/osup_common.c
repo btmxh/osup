@@ -20,9 +20,14 @@ OSUP_API void osup_set_default_error_callback() {
   errcb = osup_stderr_error_callback;
 }
 
-OSUP_LIB void osup_error(const char* error) {
+OSUP_LIB void osup_error(const char* format, ...) {
   if (errcb) {
-    errcb(error, errcb_ptr);
+    char buffer[256];
+    va_list va;
+    va_start(va, format);
+    vsnprintf(buffer, sizeof(buffer), format, va);
+    va_end(va);
+    errcb(buffer, errcb_ptr);
   }
 }
 
