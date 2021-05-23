@@ -9,7 +9,7 @@ OSUP_STORAGE osup_errcb errcb = NULL;
 OSUP_STORAGE void* errcb_ptr = NULL;
 
 static void osup_stderr_error_callback(const char* err, void* ptr) {
-  fprintf(stderr, "[osup] %s", err);
+  fprintf(stderr, "[osup] %s\n", err);
 }
 
 OSUP_API void osup_set_error_callback(osup_errcb callback, void* ptr) {
