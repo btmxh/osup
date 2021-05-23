@@ -260,7 +260,7 @@ OSUP_INTERN osup_bool osup_bm_parse_general_line(osup_bm_ctx* ctx,
   OSUP_BM_KV_PARSE_INT("AudioLeadIn: ", general.audioLeadIn);
   OSUP_BM_KV_PARSE_STRING("AudioHash: ", general.audioHash);
   OSUP_BM_KV_PARSE_INT("PreviewTime: ", general.previewTime);
-  OSUP_BM_KV_PARSE_INT_ENUM("Countdown", general.countdown,
+  OSUP_BM_KV_PARSE_INT_ENUM("Countdown: ", general.countdown,
                             OSUP_COUNTDOWN_SPEED_NONE,
                             OSUP_COUNTDOWN_SPEED_DOUBLE);
   OSUP_BM_KV_PARSE_DECIMAL("StackLeniency: ", general.stackLeniency);
@@ -275,7 +275,7 @@ OSUP_INTERN osup_bool osup_bm_parse_general_line(osup_bm_ctx* ctx,
   OSUP_BM_KV_PARSE_INT("CountdownOffset: ", general.countdownOffset);
   OSUP_BM_KV_PARSE_BOOL("SpecialStyle: ", general.specialStyle);
   OSUP_BM_KV_PARSE_BOOL("WidescreenStoryboard: ", general.widescreenStoryboard);
-  OSUP_BM_KV_PARSE_BOOL("SamplesMatchPlaybackRate",
+  OSUP_BM_KV_PARSE_BOOL("SamplesMatchPlaybackRate: ",
                         general.samplesMatchPlaybackRate);
 
   if (osup_check_prefix_and_advance(line, "SampleSet: ")) {
@@ -1111,8 +1111,7 @@ success:
       return osup_false;
     }
     lineNumber++;
-  }
-  while (*line != '\0');
+  } while (*line != '\0');
 
   return osup_true;
 }
@@ -1165,7 +1164,7 @@ success:
   size_t lineNumber = 2;
   while (getline(&line, &bufSize, file) != -1) {
     const char* lineConst = line;
-    if(!osup_bm_nextline(&ctx, &lineConst)) {
+    if (!osup_bm_nextline(&ctx, &lineConst)) {
       osup_error("error on line %zu", lineNumber);
       return osup_false;
     }
