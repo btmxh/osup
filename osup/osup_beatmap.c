@@ -766,8 +766,9 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
     const char* valueEnd = *line;
     while (*valueEnd != ',') {
       if (osup_is_line_terminator(*valueEnd)) {
-        osup_error("unexpected end-of-line");
-        return osup_false;
+        /* looking at my maps, i see a lot of omitted edgeSounds, edgeSets, so i
+         * guess it's allowed */
+        return osup_true;
       }
       valueEnd++;
     }
@@ -871,7 +872,7 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
     ++(*line);
   }
 
-  if(osup_is_line_terminator(**line)) {
+  if (osup_is_line_terminator(**line)) {
     /* hit sample can be omitted */
     return osup_true;
   }
