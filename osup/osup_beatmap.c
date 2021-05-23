@@ -1077,6 +1077,7 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
 OSUP_API osup_bool osup_beatmap_load(osup_bm* map, const char* file) {
   FILE* f = fopen(file, "r");
   if (!f) {
+    osup_error("unable to read file %s", file);
     return osup_false;
   }
   return osup_beatmap_load_stream(map, f);
