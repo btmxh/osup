@@ -784,8 +784,8 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
       if (*it == '|') {
         edgeSoundCount++;
       } else if (osup_is_line_terminator(*it)) {
-        osup_error("unexpected end-of-line");
-        return osup_false;
+        /* hit sample is omitted */
+        return osup_true;
       }
       it++;
     }
