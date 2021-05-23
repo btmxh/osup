@@ -5,19 +5,19 @@
 
 void testInt(const char* str, osup_int expected) {
   osup_int v;
-  assert(osup_parse_int(&str, str + strlen(str), &v) && v == expected);
+  assert(osup_parse_int(str, str + strlen(str), &v) && v == expected);
 }
 
 void testDecimal(const char* str, osup_decimal expected) {
   static const osup_decimal epsilon = 0.001;
   osup_decimal v;
-  assert(osup_parse_decimal(&str, str + strlen(str), &v) &&
+  assert(osup_parse_decimal(str, str + strlen(str), &v) &&
          v - expected < epsilon && expected - v < epsilon);
 }
 
 void testRGB(const char* str, uint8_t r, uint8_t g, uint8_t b) {
   osup_rgb v;
-  assert(osup_parse_rgb(&str, str + strlen(str), &v) && v.red == r &&
+  assert(osup_parse_rgb(str, str + strlen(str), &v) && v.red == r &&
          v.green == g && v.blue == b);
 }
 
