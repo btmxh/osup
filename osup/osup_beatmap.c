@@ -511,7 +511,8 @@ OSUP_INTERN osup_bool osup_bm_parse_colors_line(osup_bm_ctx* ctx,
       combo = combo * 10 + (**line - '0');
       ++(*line);
     }
-    if (combo > sizeof(ctx->map->colors.combos) / sizeof(osup_rgb) || combo == 0) {
+    if (combo > sizeof(ctx->map->colors.combos) / sizeof(osup_rgb) ||
+        combo == 0) {
       return osup_false;
     }
     osup_rgb value;
@@ -948,7 +949,8 @@ OSUP_API osup_bool osup_beatmap_load_stream(osup_bm* map, FILE* file) {
   OSUP_STORAGE size_t defaultBufSize = 32;
 
   char header[sizeof("osu file format v") - 1];
-  if (fread(header, 1, sizeof(header), file) != sizeof(header)) {
+  if (fread(header, 1, sizeof(header), file) != sizeof(header) ||
+      memcmp(header, "osu file format v", sizeof("osu file format v") - 1)) {
     return osup_false;
   }
 
