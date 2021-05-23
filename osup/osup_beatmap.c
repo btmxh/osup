@@ -1156,6 +1156,7 @@ OSUP_API osup_bool osup_beatmap_load_stream(osup_bm* map, FILE* file) {
 
 success:
   if (!osup_check_version(&ctx)) {
+    osup_error("unsupported .osu version: %s", ctx.version);
     return osup_false;
   }
   /* TODO: make this not depend on getline function */
