@@ -88,18 +88,15 @@ OSUP_INTERN osup_bool osup_parse_unsigned_decimal(const char** begin,
         }
         break;
       case 'e':
-      case 'E':
-        if (part == FRACT) {
-          /* the exponent part is an integer, so we can use osup_parse_int to
-           * parse it */
-          osup_int exp;
-          ++(*begin);
-          osup_parse_int(begin, end, &exp);
-          *value *= pow(10.0, exp);
-          return osup_true;
-        } else {
-          return osup_false;
-        }
+      case 'E': {
+        /* the exponent part is an integer, so we can use osup_parse_int to
+         * parse it */
+        osup_int exp;
+        ++(*begin);
+        osup_parse_int(begin, end, &exp);
+        *value *= pow(10.0, exp);
+        return osup_true;
+      }
       default:
         if (isdigit(**begin)) {
           switch (part) {
@@ -179,7 +176,7 @@ OSUP_LIB osup_bool osup_parse_ubyte(const char** begin, const char* end,
 }
 
 OSUP_INTERN osup_bool osup_parse_uint_until_nondigit_char(const char** begin,
-                                                      osup_int* value) {
+                                                          osup_int* value) {
   if (!isdigit(**begin)) {
     return osup_false;
   }
@@ -191,7 +188,8 @@ OSUP_INTERN osup_bool osup_parse_uint_until_nondigit_char(const char** begin,
   return osup_true;
 }
 
-OSUP_LIB osup_bool osup_parse_int_until_nondigit_char(const char** begin, osup_int* value) {
+OSUP_LIB osup_bool osup_parse_int_until_nondigit_char(const char** begin,
+                                                      osup_int* value) {
   if (**begin == '-') {
     ++(*begin);
     if (!osup_parse_uint_until_nondigit_char(begin, value)) {
@@ -206,7 +204,7 @@ OSUP_LIB osup_bool osup_parse_int_until_nondigit_char(const char** begin, osup_i
 }
 
 OSUP_LIB osup_bool osup_is_line_terminator(char c) {
-  return c == '\0' || c == '\r' || c == '\n';
+  return c == '\0' || c == '\t' || c == '\n';
 }
 
 OSUP_LIB osup_bool osup_split_string(char delimiter, const char** splitBegin,
@@ -261,7 +259,7 @@ OSUP_LIB osup_bool osup_split_string_line_terminated_quoted(
     *splitBegin = ++(*splitEnd);
     /* find next " character, also check if we are out of bounds */
     while (**splitEnd != '"') {
-      if(osup_is_line_terminator(**splitEnd)) {
+      if (osup_is_line_terminator(**splitEnd)) {
         return osup_false;
       }
       ++(*splitEnd);
