@@ -1080,7 +1080,9 @@ OSUP_API osup_bool osup_beatmap_load(osup_bm* map, const char* file) {
     osup_error("unable to read file %s", file);
     return osup_false;
   }
-  return osup_beatmap_load_stream(map, f);
+  osup_bool ret = osup_beatmap_load_stream(map, f);
+  fclose(f);
+  return ret;
 }
 
 OSUP_API osup_bool osup_beatmap_load_string(osup_bm* map, const char* string) {
