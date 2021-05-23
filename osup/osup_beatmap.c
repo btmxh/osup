@@ -871,6 +871,11 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
     ++(*line);
   }
 
+  if(osup_is_line_terminator(**line)) {
+    /* hit sample can be omitted */
+    return osup_true;
+  }
+
   osup_int i;
   if (!osup_parse_int_until_nondigit_char(line, &i) || *((*line)++) != ':' ||
       i < OSUP_SAMPLESET_DEFAULT || i > OSUP_SAMPLESET_DRUM) {
