@@ -37,6 +37,12 @@ typedef void (*osup_errcb)(const char*, void*);
 OSUP_API void osup_set_error_callback(osup_errcb callback, void* ptr);
 OSUP_API void osup_set_default_error_callback();
 OSUP_LIB void osup_error(const char* format, ...);
+/* return a temporary null-terminated string with content taken from begin to
+ * end
+ */
+OSUP_LIB const char* osup_temp_string_slice(const char* begin, const char* end);
+/* osup_temp_string_slice for line-terminated strings */
+OSUP_LIB const char* osup_temp_string_slice_line_terminated(const char* line);
 
 #if __STDC_VERSION__ >= 199901L
 #include <stdbool.h>
@@ -77,17 +83,17 @@ typedef enum {
 
 /* parsing functions, but also increment the current pointer for "better
  * performance" */
-OSUP_LIB osup_bool osup_strdup(const char** begin, const char* end,
+OSUP_LIB osup_bool osup_strdup(const char* begin, const char* end,
                                char** value);
-OSUP_LIB osup_bool osup_parse_int(const char** begin, const char* end,
+OSUP_LIB osup_bool osup_parse_int(const char* begin, const char* end,
                                   osup_int* value);
-OSUP_LIB osup_bool osup_parse_bool(const char** begin, const char* end,
+OSUP_LIB osup_bool osup_parse_bool(const char* begin, const char* end,
                                    osup_bool* value);
-OSUP_LIB osup_bool osup_parse_decimal(const char** begin, const char* end,
+OSUP_LIB osup_bool osup_parse_decimal(const char* begin, const char* end,
                                       osup_decimal* value);
-OSUP_LIB osup_bool osup_parse_rgb(const char** begin, const char* end,
+OSUP_LIB osup_bool osup_parse_rgb(const char* begin, const char* end,
                                   osup_rgb* value);
-OSUP_LIB osup_bool osup_parse_ubyte(const char** begin, const char* end,
+OSUP_LIB osup_bool osup_parse_ubyte(const char* begin, const char* end,
                                     uint8_t* byte);
 /* parse int until a non-digit character, used to parse int lists */
 OSUP_LIB osup_bool osup_parse_int_until_nondigit_char(const char** begin,
