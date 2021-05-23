@@ -25,8 +25,6 @@ typedef enum {
   OSUP_BM_SECTION_HIT_OBJECTS
 } osup_bm_section;
 
-OSUP_STORAGE const char OSUP_LINE_TERMINATORS[] = "\0\t\n";
-
 typedef struct {
   char version[16]; /* should be more than enough to store the version */
   osup_bm_section section;
@@ -70,7 +68,7 @@ osup_advance_to_next_line(const char** line, osup_bool checkForNonBlankChar) {
   while (osup_true) {
     if (**line == '\0') {
       return osup_true;
-    } else if (**line == '\t' || **line == '\n') {
+    } else if (**line == '\r' || **line == '\n') {
       ++(*line);
       return osup_true;
     } else if (checkForNonBlankChar && !isblank(**line)) {
@@ -82,7 +80,7 @@ osup_advance_to_next_line(const char** line, osup_bool checkForNonBlankChar) {
 }
 
 /* advance line pointer to AFTER the last non-blank character of line, and
- * return the line-terminating character (one of '\0', '\t' and '\n') */
+ * return the line-terminating character (one of '\0', '\r' and '\n') */
 OSUP_INTERN const char* osup_advance_to_last_nonblank_char(const char** line) {
   const char* it = *line;
   while (!osup_is_line_terminator(*it)) {
@@ -764,7 +762,7 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
         /* unexpected syntax */
         return osup_false;
       }
-    case '\t':
+    case '\r':
     case '\n':
     case '\0':
       /* empty line */

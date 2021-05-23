@@ -206,7 +206,7 @@ OSUP_LIB osup_bool osup_parse_int_until_nondigit_char(const char** begin, osup_i
 }
 
 OSUP_LIB osup_bool osup_is_line_terminator(char c) {
-  return c == '\0' || c == '\t' || c == '\n';
+  return c == '\0' || c == '\r' || c == '\n';
 }
 
 OSUP_LIB osup_bool osup_split_string(char delimiter, const char** splitBegin,
