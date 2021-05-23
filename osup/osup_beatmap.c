@@ -566,7 +566,6 @@ OSUP_INTERN osup_bool osup_bm_parse_timing_points_line(
       sampleSetValue > OSUP_SAMPLESET_DRUM) {
     osup_error("invalid sample set value: %d", sampleSetValue);
     timingpoint->sampleSet = sampleSetValue;
-  } else {
     return osup_false;
   }
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
