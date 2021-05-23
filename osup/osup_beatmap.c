@@ -280,6 +280,9 @@ OSUP_INTERN osup_bool osup_bm_parse_general_line(osup_bm_ctx* ctx,
 
   if (osup_check_prefix_and_advance(line, "SampleSet: ")) {
     OSUP_BM_KV_GET_VALUE();
+    /* the specs wtf */
+    OSUP_BM_KV_CHECK_STRING_ENUM(general.sampleSet, "None",
+                                 OSUP_SAMPLESET_DEFAULT);
     OSUP_BM_KV_CHECK_STRING_ENUM(general.sampleSet, "Normal",
                                  OSUP_SAMPLESET_NORMAL);
     OSUP_BM_KV_CHECK_STRING_ENUM(general.sampleSet, "Soft",
