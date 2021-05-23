@@ -2,8 +2,8 @@
 
 #include <ctype.h>
 #include <math.h>
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 OSUP_STORAGE osup_errcb errcb = NULL;
 OSUP_STORAGE void* errcb_ptr = NULL;
@@ -33,10 +33,11 @@ OSUP_LIB void osup_error(const char* format, ...) {
 }
 
 char osup_temp_slice[256 + 1] = {};
-OSUP_LIB const char* osup_temp_string_slice(const char* begin, const char* end) {
+OSUP_LIB const char* osup_temp_string_slice(const char* begin,
+                                            const char* end) {
   assert(begin <= end);
   size_t len = end - begin;
-  if(len > sizeof(osup_temp_slice) - 1) {
+  if (len > sizeof(osup_temp_slice) - 1) {
     len = sizeof(osup_temp_slice) - 1;
   }
   memcpy(osup_temp_slice, begin, len);
@@ -46,8 +47,8 @@ OSUP_LIB const char* osup_temp_string_slice(const char* begin, const char* end) 
 
 OSUP_LIB const char* osup_temp_string_slice_line_terminated(const char* line) {
   size_t i = 0;
-  while(i < sizeof(osup_temp_slice) - 1) {
-    if(osup_is_line_terminator(line[i])) {
+  while (i < sizeof(osup_temp_slice) - 1) {
+    if (osup_is_line_terminator(line[i])) {
       osup_temp_slice[i] = '\0';
       break;
     } else {
@@ -278,14 +279,15 @@ OSUP_LIB osup_bool osup_split_string_line_terminated(char delimiter,
 
 /* like osup_split_string_line_terminated but with support for quotes */
 OSUP_LIB osup_bool osup_split_string_line_terminated_quoted(
-    char delimiter, const char** splitBegin, const char** splitEnd) {
+    char delimiter, const char** valueBegin, const char** valueEnd,
+    const char** splitEnd) {
   /* check if we are actually at the end of the string */
-  if (*splitBegin && osup_is_line_terminator(**splitEnd)) return osup_false;
-  *splitBegin = ++(*splitEnd);
-  if (**splitBegin == '"') {
-    /* increase both splitBegin and splitEnd, since the string starts after the
+  if (*valueBegin && osup_is_line_terminator(**splitEnd)) return osup_false;
+  *valueBegin = ++(*splitEnd);
+  if (**valueBegin == '"') {
+    /* increase both valueBegin and splitEnd, since the string starts after the
      * " character */
-    *splitBegin = ++(*splitEnd);
+    *valueBegin = ++(*splitEnd);
     /* find next " character, also check if we are out of bounds */
     while (**splitEnd != '"') {
       if (osup_is_line_terminator(**splitEnd)) {
@@ -293,12 +295,15 @@ OSUP_LIB osup_bool osup_split_string_line_terminated_quoted(
       }
       ++(*splitEnd);
     }
+    *valueEnd = *splitEnd;
+    ++(*splitEnd);
     return osup_true;
   } else {
     /* same algorithm from osup_split_string_terminated */
     while (**splitEnd != delimiter && !osup_is_line_terminator(**splitEnd)) {
       ++(*splitEnd);
     }
+    *valueEnd = *splitEnd;
 
     return osup_true;
   }

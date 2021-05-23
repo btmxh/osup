@@ -106,8 +106,11 @@ OSUP_LIB osup_bool osup_is_line_terminator(char c);
 OSUP_LIB osup_bool osup_split_string_line_terminated(char delimiter,
                                                      const char** splitBegin,
                                                      const char** splitEnd);
+/* for quoted string, splitEnd is not at the end of the token, so there will be
+ * issues when parsing, this is why we need another pointer */
 OSUP_LIB osup_bool osup_split_string_line_terminated_quoted(
-    char delimiter, const char** splitBegin, const char** splitEnd);
+    char delimiter, const char** splitBegin, const char** splitEnd,
+    const char** splitQuoteEnd);
 
 #ifdef __cplusplus
 }

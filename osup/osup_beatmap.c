@@ -486,10 +486,11 @@ OSUP_INTERN osup_bool osup_bm_parse_events_line(osup_bm_ctx* ctx,
   switch (event->eventType) {
     /* exact same structure */
     case OSUP_EVENT_TYPE_BACKGROUND:
-    case OSUP_EVENT_TYPE_VIDEO:
+    case OSUP_EVENT_TYPE_VIDEO: {
+      const char* valueEnd;
       if (!osup_split_string_line_terminated_quoted(',', &elementBegin,
-                                                    &elementEnd) ||
-          !osup_strdup(elementBegin, elementEnd, &event->bg.filename)) {
+                                                    &valueEnd, &elementEnd) ||
+          !osup_strdup(elementBegin, valueEnd, &event->bg.filename)) {
         osup_error(
             "couldn't get filename from background/video [Events] line: "
             "%s",
@@ -511,6 +512,7 @@ OSUP_INTERN osup_bool osup_bm_parse_events_line(osup_bm_ctx* ctx,
       /* there should be no leftover tokens */
       *line = elementEnd;
       return osup_advance_to_next_line(line, osup_true);
+    }
     case OSUP_EVENT_TYPE_BREAK:
 
       if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
