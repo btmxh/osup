@@ -53,6 +53,7 @@ OSUP_LIB const char* osup_temp_string_slice_line_terminated(const char* line) {
       break;
     } else {
       osup_temp_slice[i] = line[i];
+      i++;
     }
   }
   return osup_temp_slice;
