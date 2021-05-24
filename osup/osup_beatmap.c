@@ -5,6 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef OSUP_NO_LOGGING
+#define OSUP_BM_ERROR(...)
+#else
+#define OSUP_BM_ERROR(...) osup_error("[bm] " __VA_ARGS__)
+#endif
+
 typedef enum {
   /* key-value sections */
   OSUP_BM_SECTION_GENERAL,

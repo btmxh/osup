@@ -33,11 +33,6 @@ extern "C" {
 #define OSUP_IS_SLIDER(type) (type & OSUP_FLAG(1))
 #define OSUP_IS_SPINNER(type) (type & OSUP_FLAG(3))
 #define OSUP_IS_MANIA_HOLD(type) (type & OSUP_FLAG(7))
-#ifdef OSUP_NO_LOGGING
-#define OSUP_BM_ERROR(...)
-#else
-#define OSUP_BM_ERROR(...) osup_error("[bm] " __VA_ARGS__)
-#endif
 
 typedef enum {
   OSUP_SAMPLESET_DEFAULT = 0,
