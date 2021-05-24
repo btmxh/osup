@@ -631,11 +631,12 @@ OSUP_INTERN osup_bool osup_bm_parse_colors_line(osup_bm_ctx* ctx,
     }
 
     OSUP_BM_KV_GET_VALUE();
-    if (!osup_parse_rgb(valueBegin, valueEnd, &ctx->map->colors.combos[combo - 1])) {
+    if (!osup_parse_rgb(valueBegin, valueEnd,
+                        &ctx->map->colors.combos[combo - 1])) {
       osup_error("combo color parsing error, parsed string: %s", *line);
       return osup_false;
     } else {
-      if(ctx->map->colors.maxCombo < combo - 1) {
+      if (ctx->map->colors.maxCombo < combo - 1) {
         ctx->map->colors.maxCombo = combo - 1;
       }
       return osup_true;
@@ -1226,8 +1227,11 @@ OSUP_API void osup_beatmap_free(osup_bm* map) {
   osup_free_ptr(map->metadata.creator);
   osup_free_ptr(map->metadata.version);
   osup_free_ptr(map->metadata.source);
+
   /* tags are stored in a flat array of chars */
-  osup_free_ptr(map->metadata.tags.elements[0]);
+  if (map->metadata.tags.elements) {
+    osup_free_ptr(map->metadata.tags.elements[0]);
+  }
 
   size_t i = 0;
   while (i < map->events.count) {
@@ -1237,7 +1241,7 @@ OSUP_API void osup_beatmap_free(osup_bm* map) {
   osup_free_ptr(map->timingPoints.elements);
 
   i = 0;
-  while(i < map->hitObjects.count) {
+  while (i < map->hitObjects.count) {
     osup_hitobject_free(&map->hitObjects.elements[i++]);
   }
 
