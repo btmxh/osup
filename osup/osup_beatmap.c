@@ -720,46 +720,51 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
                    (unsigned)curveTypeChar);
         return osup_false;
     }
-    if (*((*line)++) != '|') {
-      osup_error("expected '|': %s", *line);
-      return osup_false;
-    }
 
-    const char* it = *line;
-    size_t curvePointCount = 1;
-    while (*it != ',' && !osup_is_line_terminator(*it)) {
-      if (*it == '|') {
-        curvePointCount++;
-      }
-      it++;
-    }
-
-    value->slider.curvePoints.elements =
-        malloc(curvePointCount * sizeof(osup_vec2));
-    if (!value->slider.curvePoints.elements) {
-      osup_error("malloc returns NULL, malloc size: %zu",
-                 curvePointCount * sizeof(osup_vec2));
-      return osup_false;
-    }
-    value->slider.curvePoints.count = curvePointCount;
-    size_t index = 0;
-    while (index < curvePointCount) {
-      if (!osup_parse_int_until_nondigit_char(
-              line, &value->slider.curvePoints.elements[index].x) ||
-          *((*line)++) != ':' ||
-          !osup_parse_int_until_nondigit_char(
-              line, &value->slider.curvePoints.elements[index].y)) {
-        osup_error("parsing curve point error (line: %s)",
-                   osup_temp_string_slice_line_terminated(*line));
-        return osup_false;
-      }
-      if (**line != ',' && **line != '|') {
-        osup_error("expected ',' or '|': %s",
-                   osup_temp_string_slice_line_terminated(*line));
-        return osup_false;
-      }
+    if (**line == '|') {
       ++(*line);
-      ++index;
+      const char* it = *line;
+      size_t curvePointCount = 1;
+      while (*it != ',' && !osup_is_line_terminator(*it)) {
+        if (*it == '|') {
+          curvePointCount++;
+        }
+        it++;
+      }
+
+      value->slider.curvePoints.elements =
+          malloc(curvePointCount * sizeof(osup_vec2));
+      if (!value->slider.curvePoints.elements) {
+        osup_error("malloc returns NULL, malloc size: %zu",
+                   curvePointCount * sizeof(osup_vec2));
+        return osup_false;
+      }
+      value->slider.curvePoints.count = curvePointCount;
+      size_t index = 0;
+      while (index < curvePointCount) {
+        if (!osup_parse_int_until_nondigit_char(
+                line, &value->slider.curvePoints.elements[index].x) ||
+            *((*line)++) != ':' ||
+            !osup_parse_int_until_nondigit_char(
+                line, &value->slider.curvePoints.elements[index].y)) {
+          osup_error("parsing curve point error (line: %s)",
+                     osup_temp_string_slice_line_terminated(*line));
+          return osup_false;
+        }
+        if (**line != ',' && **line != '|') {
+          osup_error("expected ',' or '|': %s",
+                     osup_temp_string_slice_line_terminated(*line));
+          return osup_false;
+        }
+        ++(*line);
+        ++index;
+      }
+    } else if (**line == ',') {
+      ++(*line);
+    } else {
+      osup_error("expected ',' or '|': %s",
+                 osup_temp_string_slice_line_terminated(*line));
+      return osup_false;
     }
 
     if (!osup_parse_int_until_nondigit_char(line, &value->slider.slides) ||
@@ -785,7 +790,7 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
     }
     *line = valueEnd + 1;
 
-    it = *line;
+    const char* it = *line;
     size_t edgeSoundCount = 1;
     while (*it != ',') {
       if (*it == '|') {
@@ -806,7 +811,7 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
     }
     value->slider.edgeSounds.count = edgeSoundCount;
 
-    index = 0;
+    size_t index = 0;
     while (index < edgeSoundCount) {
       if (!osup_parse_int_until_nondigit_char(
               line, &value->slider.edgeSounds.elements[index])) {
@@ -1017,6 +1022,8 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
             events->elements = newEvent;
           }
           osup_event* event = &events->elements[events->count];
+          /* event may contains pointer, we should initialize it to NULL */
+          memset(event, 0, sizeof(*event));
           /* we won't parse storyboards (for the time being), so we won't throw
            * error for invalid effect type */
           if (osup_bm_parse_events_line(ctx, line, event)) {
@@ -1066,6 +1073,8 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
             hitObjects->elements = newHitObjects;
           }
           osup_hitobject* hitObject = &hitObjects->elements[hitObjects->count];
+          /* hitObject may contains a pointer, so we should initialize it to NULL */
+          memset(hitObject, 0, sizeof(*hitObject));
           if (osup_bm_parse_hit_objects_line(ctx, line, hitObject)) {
             hitObjects->count++;
             return osup_true;
@@ -1190,11 +1199,13 @@ success:
     const char* lineConst = line;
     if (!osup_bm_nextline(&ctx, &lineConst)) {
       osup_error("error on line %zu", lineNumber);
+      free(line);
       return osup_false;
     }
     lineNumber++;
   }
 
+  free(line);
   return osup_true;
 }
 
@@ -1231,6 +1242,7 @@ OSUP_API void osup_beatmap_free(osup_bm* map) {
   /* tags are stored in a flat array of chars */
   if (map->metadata.tags.elements) {
     osup_free_ptr(map->metadata.tags.elements[0]);
+    osup_free_ptr(map->metadata.tags.elements);
   }
 
   size_t i = 0;
@@ -1244,6 +1256,7 @@ OSUP_API void osup_beatmap_free(osup_bm* map) {
   while (i < map->hitObjects.count) {
     osup_hitobject_free(&map->hitObjects.elements[i++]);
   }
+  osup_free_ptr(map->hitObjects.elements);
 
   /* reset everything to 0 */
   memset(map, 0, sizeof(*map));
