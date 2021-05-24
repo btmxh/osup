@@ -2,6 +2,11 @@
 
 int main() {
   osup_bm map = {0};
-  return !osup_beatmap_load(&map, "res/test.osu");
+#ifndef OSUP_NO_LOGGING
+  osup_set_default_error_callback();
+#endif
+  osup_bool ret = osup_beatmap_load(&map, "res/unshakable.osu");
+  osup_beatmap_free(&map);
+  return !ret;
 }
 
