@@ -132,6 +132,7 @@ OSUP_LIB osup_bool osup_split_string_line_terminated(char delimiter,
 OSUP_LIB osup_bool osup_split_string_line_terminated_quoted(
     char delimiter, const char** splitBegin, const char** splitEnd,
     const char** splitQuoteEnd);
+OSUP_LIB void osup_free_ptr(void* ptr);
 
 #ifdef __cplusplus
 }

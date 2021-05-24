@@ -1,6 +1,23 @@
 #ifndef OSUP_BEATMAP_H
 #define OSUP_BEATMAP_H
 
+/*********
+ * USAGE *
+ *********/
+#if 0
+
+int main() {
+  /* remember to initialize everything to 0, the program will crash if you gave
+   * it garbage data */
+  osup_bm map{};
+  osup_beatmap_load(&map, "/path/to/beatmap");
+  printf(map.metadata.title);
+  osup_beatmap_free(&map);
+  return 0;
+}
+
+#endif
+
 #define OSUP_API
 
 #ifdef __cplusplus
@@ -150,6 +167,8 @@ typedef struct {
    * probably limited to 8 or sth, also this is 0-indexed, so Combo1 will be in
    * combos[0] */
   osup_rgb combos[16];
+  /* also 0-indexed */
+  size_t maxCombo;
   osup_rgb sliderTrackOverride;
   osup_rgb sliderBorder;
 } osup_bm_colors;
@@ -241,6 +260,10 @@ OSUP_API osup_bool osup_beatmap_load_callbacks(osup_bm* map,
                                                osup_bm_callback callback,
                                                void* ptr);
 OSUP_API osup_bool osup_beatmap_load_stream(osup_bm* map, FILE* stream);
+
+OSUP_API void osup_hitobject_free(osup_hitobject* obj);
+OSUP_API void osup_event_free(osup_event* event);
+OSUP_API void osup_beatmap_free(osup_bm* map);
 
 #ifdef __cplusplus
 }

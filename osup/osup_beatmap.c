@@ -631,11 +631,13 @@ OSUP_INTERN osup_bool osup_bm_parse_colors_line(osup_bm_ctx* ctx,
     }
 
     OSUP_BM_KV_GET_VALUE();
-    if (!osup_parse_rgb(valueBegin, valueEnd, &value)) {
+    if (!osup_parse_rgb(valueBegin, valueEnd, &ctx->map->colors.combos[combo - 1])) {
       osup_error("combo color parsing error, parsed string: %s", *line);
       return osup_false;
     } else {
-      ctx->map->colors.combos[combo - 1] = value;
+      if(ctx->map->colors.maxCombo < combo - 1) {
+        ctx->map->colors.maxCombo = combo - 1;
+      }
       return osup_true;
     }
   }
@@ -1193,5 +1195,53 @@ success:
   }
 
   return osup_true;
+}
+
+OSUP_API void osup_event_free(osup_event* event) {
+  if (event->eventType == OSUP_EVENT_TYPE_BACKGROUND) {
+    osup_free_ptr(event->bg.filename);
+  } else if (event->eventType == OSUP_EVENT_TYPE_VIDEO) {
+    osup_free_ptr(event->video.filename);
+  }
+}
+
+OSUP_API void osup_hitobject_free(osup_hitobject* obj) {
+  osup_free_ptr(obj->hitSample.filename);
+  if (OSUP_IS_SLIDER(obj->type)) {
+    osup_free_ptr(obj->slider.curvePoints.elements);
+    osup_free_ptr(obj->slider.edgeSounds.elements);
+    osup_free_ptr(obj->slider.edgeSets.elements);
+  }
+}
+
+OSUP_API void osup_beatmap_free(osup_bm* map) {
+  osup_free_ptr(map->general.audioFilename);
+  osup_free_ptr(map->general.audioHash);
+  osup_free_ptr(map->general.skinPreference);
+  osup_free_ptr(map->editor.bookmarks.elements);
+  osup_free_ptr(map->metadata.title);
+  osup_free_ptr(map->metadata.titleUnicode);
+  osup_free_ptr(map->metadata.artist);
+  osup_free_ptr(map->metadata.artistUnicode);
+  osup_free_ptr(map->metadata.creator);
+  osup_free_ptr(map->metadata.version);
+  osup_free_ptr(map->metadata.source);
+  /* tags are stored in a flat array of chars */
+  osup_free_ptr(map->metadata.tags.elements[0]);
+
+  size_t i = 0;
+  while (i < map->events.count) {
+    osup_event_free(&map->events.elements[i++]);
+  }
+  osup_free_ptr(map->events.elements);
+  osup_free_ptr(map->timingPoints.elements);
+
+  i = 0;
+  while(i < map->hitObjects.count) {
+    osup_hitobject_free(&map->hitObjects.elements[i++]);
+  }
+
+  /* reset everything to 0 */
+  memset(map, 0, sizeof(*map));
 }
 
