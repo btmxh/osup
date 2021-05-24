@@ -53,6 +53,7 @@ extern "C" {
 #define OSUP_INTERN static
 #define OSUP_STORAGE static
 
+#ifndef OSUP_NO_LOGGING
 typedef void (*osup_errcb)(const char*, void*);
 
 OSUP_API void osup_set_error_callback(osup_errcb callback, void* ptr);
@@ -64,6 +65,7 @@ OSUP_LIB void osup_error(const char* format, ...);
 OSUP_LIB const char* osup_temp_string_slice(const char* begin, const char* end);
 /* osup_temp_string_slice for line-terminated strings */
 OSUP_LIB const char* osup_temp_string_slice_line_terminated(const char* line);
+#endif
 
 #if __STDC_VERSION__ >= 199901L
 #include <stdbool.h>

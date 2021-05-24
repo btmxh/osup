@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#ifndef OSUP_NO_LOGGING
 OSUP_STORAGE osup_errcb errcb = NULL;
 OSUP_STORAGE void* errcb_ptr = NULL;
 
@@ -58,6 +59,7 @@ OSUP_LIB const char* osup_temp_string_slice_line_terminated(const char* line) {
   }
   return osup_temp_slice;
 }
+#endif
 
 OSUP_LIB osup_bool osup_strdup(const char* begin, const char* end,
                                char** value) {

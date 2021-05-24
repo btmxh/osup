@@ -18,5 +18,12 @@ if(${OSUP_NO_LIBM})
   target_link_libraries(osup PUBLIC m)
 endif()
 
+option(OSUP_BUILD_TESTS "Build osup tests" ON)
+option(OSUP_LOGGING "Enable osup logging, may cause overhead" ON)
+
+if(NOT ${OSUP_LOGGING})
+  target_compile_definitions(osup PUBLIC OSUP_NO_LOGGING)
+endif()
+
 add_subdirectory(tests)
 
