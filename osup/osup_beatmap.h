@@ -34,6 +34,19 @@ extern "C" {
 #define OSUP_IS_SPINNER(type) (type & OSUP_FLAG(3))
 #define OSUP_IS_MANIA_HOLD(type) (type & OSUP_FLAG(7))
 
+#define OSUP_PARSE_GENERAL OSUP_FLAG(0)
+#define OSUP_PARSE_EDITOR OSUP_FLAG(1)
+#define OSUP_PARSE_METADATA OSUP_FLAG(2)
+#define OSUP_PARSE_DIFFICULTY OSUP_FLAG(3)
+#define OSUP_PARSE_TIMING_POINTS OSUP_FLAG(4)
+#define OSUP_PARSE_EVENTS OSUP_FLAG(5)
+#define OSUP_PARSE_COLORS OSUP_FLAG(6)
+#define OSUP_PARSE_HIT_OBJECTS OSUP_FLAG(7)
+#define OSUP_PARSE_ALL                                                    \
+  (OSUP_PARSE_GENERAL | OSUP_PARSE_EDITOR | OSUP_PARSE_METADATA |         \
+   OSUP_PARSE_DIFFICULTY | OSUP_PARSE_TIMING_POINTS | OSUP_PARSE_EVENTS | \
+   OSUP_PARSE_COLORS | OSUP_PARSE_HIT_OBJECTS)
+
 typedef enum {
   OSUP_SAMPLESET_DEFAULT = 0,
   OSUP_SAMPLESET_NORMAL = 1,
@@ -254,12 +267,15 @@ typedef struct {
 
 typedef const char* (*osup_bm_callback)(void*);
 
-OSUP_API osup_bool osup_beatmap_load(osup_bm* map, const char* file);
-OSUP_API osup_bool osup_beatmap_load_string(osup_bm* map, const char* string);
+OSUP_API osup_bool osup_beatmap_load(osup_bm* map, const char* file,
+                                     osup_bitfield32 flags);
+OSUP_API osup_bool osup_beatmap_load_string(osup_bm* map, const char* string,
+                                            osup_bitfield32 flags);
 OSUP_API osup_bool osup_beatmap_load_callbacks(osup_bm* map,
                                                osup_bm_callback callback,
-                                               void* ptr);
-OSUP_API osup_bool osup_beatmap_load_stream(osup_bm* map, FILE* stream);
+                                               void* ptr, osup_bitfield32 flags);
+OSUP_API osup_bool osup_beatmap_load_stream(osup_bm* map, FILE* stream,
+                                            osup_bitfield32 flags);
 
 OSUP_API void osup_hitobject_free(osup_hitobject* obj);
 OSUP_API void osup_event_free(osup_event* event);

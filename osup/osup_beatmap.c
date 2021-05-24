@@ -29,6 +29,7 @@ typedef struct {
   char version[16]; /* should be more than enough to store the version */
   osup_bm_section section;
   osup_bm* map;
+  osup_bitfield32 parseFlags;
 
   /* we will need to add events to the event list, but since we don't count the
    * number of events, we must add them to list dynamically, hence we need to
@@ -169,63 +170,63 @@ OSUP_INTERN osup_bool osup_bm_parse_general_line(osup_bm_ctx* ctx,
   *line = osup_advance_to_last_nonblank_char(&valueEnd)
 
 /* parse macros */
-#define OSUP_BM_KV_PARSE_STRING(prefix, member)                   \
-  if (osup_check_prefix_and_advance(line, prefix)) {              \
-    OSUP_BM_KV_GET_VALUE();                                       \
-    if (!osup_strdup(valueBegin, valueEnd, &ctx->map->member)) {  \
-      OSUP_BM_ERROR("osup_strdup returns false, malloc length: %zu", \
-                 (size_t)(valueEnd - *valueBegin));               \
-      return osup_false;                                          \
-    } else {                                                      \
-      return osup_true;                                           \
-    }                                                             \
-  }
-
-#define OSUP_BM_KV_PARSE_INT(prefix, member)                        \
-  if (osup_check_prefix_and_advance(line, prefix)) {                \
-    OSUP_BM_KV_GET_VALUE();                                         \
-    if (!osup_parse_int(valueBegin, valueEnd, &ctx->map->member)) { \
-      OSUP_BM_ERROR("osup_parse_int returns false, parsed string: %s", \
-                 osup_temp_string_slice(valueBegin, valueEnd));     \
-      return osup_false;                                            \
-    } else {                                                        \
-      return osup_true;                                             \
-    }                                                               \
-  }
-
-#define OSUP_BM_KV_PARSE_BOOL(prefix, member)                        \
+#define OSUP_BM_KV_PARSE_STRING(prefix, member)                      \
   if (osup_check_prefix_and_advance(line, prefix)) {                 \
     OSUP_BM_KV_GET_VALUE();                                          \
-    if (!osup_parse_bool(valueBegin, valueEnd, &ctx->map->member)) { \
-      OSUP_BM_ERROR("osup_parse_bool returns false, parsed string: %s", \
-                 osup_temp_string_slice(valueBegin, valueEnd));      \
+    if (!osup_strdup(valueBegin, valueEnd, &ctx->map->member)) {     \
+      OSUP_BM_ERROR("osup_strdup returns false, malloc length: %zu", \
+                    (size_t)(valueEnd - *valueBegin));               \
       return osup_false;                                             \
     } else {                                                         \
       return osup_true;                                              \
     }                                                                \
   }
 
-#define OSUP_BM_KV_PARSE_DECIMAL(prefix, member)                        \
+#define OSUP_BM_KV_PARSE_INT(prefix, member)                           \
+  if (osup_check_prefix_and_advance(line, prefix)) {                   \
+    OSUP_BM_KV_GET_VALUE();                                            \
+    if (!osup_parse_int(valueBegin, valueEnd, &ctx->map->member)) {    \
+      OSUP_BM_ERROR("osup_parse_int returns false, parsed string: %s", \
+                    osup_temp_string_slice(valueBegin, valueEnd));     \
+      return osup_false;                                               \
+    } else {                                                           \
+      return osup_true;                                                \
+    }                                                                  \
+  }
+
+#define OSUP_BM_KV_PARSE_BOOL(prefix, member)                           \
   if (osup_check_prefix_and_advance(line, prefix)) {                    \
     OSUP_BM_KV_GET_VALUE();                                             \
-    if (!osup_parse_decimal(valueBegin, valueEnd, &ctx->map->member)) { \
-      OSUP_BM_ERROR("osup_parse_decimal returns false, parsed string: %s", \
-                 osup_temp_string_slice(valueBegin, valueEnd));         \
+    if (!osup_parse_bool(valueBegin, valueEnd, &ctx->map->member)) {    \
+      OSUP_BM_ERROR("osup_parse_bool returns false, parsed string: %s", \
+                    osup_temp_string_slice(valueBegin, valueEnd));      \
       return osup_false;                                                \
     } else {                                                            \
       return osup_true;                                                 \
     }                                                                   \
   }
-#define OSUP_BM_KV_PARSE_RGB(prefix, member)                        \
-  if (osup_check_prefix_and_advance(line, prefix)) {                \
-    OSUP_BM_KV_GET_VALUE();                                         \
-    if (!osup_parse_rgb(valueBegin, valueEnd, &ctx->map->member)) { \
+
+#define OSUP_BM_KV_PARSE_DECIMAL(prefix, member)                           \
+  if (osup_check_prefix_and_advance(line, prefix)) {                       \
+    OSUP_BM_KV_GET_VALUE();                                                \
+    if (!osup_parse_decimal(valueBegin, valueEnd, &ctx->map->member)) {    \
+      OSUP_BM_ERROR("osup_parse_decimal returns false, parsed string: %s", \
+                    osup_temp_string_slice(valueBegin, valueEnd));         \
+      return osup_false;                                                   \
+    } else {                                                               \
+      return osup_true;                                                    \
+    }                                                                      \
+  }
+#define OSUP_BM_KV_PARSE_RGB(prefix, member)                           \
+  if (osup_check_prefix_and_advance(line, prefix)) {                   \
+    OSUP_BM_KV_GET_VALUE();                                            \
+    if (!osup_parse_rgb(valueBegin, valueEnd, &ctx->map->member)) {    \
       OSUP_BM_ERROR("osup_parse_rgb returns false, parsed string: %s", \
-                 osup_temp_string_slice(valueBegin, valueEnd));     \
-      return osup_false;                                            \
-    } else {                                                        \
-      return osup_true;                                             \
-    }                                                               \
+                    osup_temp_string_slice(valueBegin, valueEnd));     \
+      return osup_false;                                               \
+    } else {                                                           \
+      return osup_true;                                                \
+    }                                                                  \
   }
 
 #define OSUP_BM_KV_PARSE_INT_ENUM(prefix, member, minEnum, maxEnum)            \
@@ -234,7 +235,7 @@ OSUP_INTERN osup_bool osup_bm_parse_general_line(osup_bm_ctx* ctx,
     osup_int enumValue;                                                        \
     if (!osup_parse_int(valueBegin, valueEnd, &enumValue) ||                   \
         enumValue < minEnum || enumValue > maxEnum) {                          \
-      OSUP_BM_ERROR(                                                              \
+      OSUP_BM_ERROR(                                                           \
           "osup_parse_int returns false/enum out of range, parsed string: %s", \
           osup_temp_string_slice(valueBegin, valueEnd));                       \
       return osup_false;                                                       \
@@ -254,6 +255,9 @@ OSUP_INTERN osup_bool osup_bm_parse_general_line(osup_bm_ctx* ctx,
 
 OSUP_INTERN osup_bool osup_bm_parse_general_line(osup_bm_ctx* ctx,
                                                  const char** line) {
+  if (!(ctx->parseFlags & OSUP_PARSE_GENERAL)) {
+    return osup_advance_to_next_line(line, osup_false);
+  }
   const char* valueEnd;
   osup_int enumValue;
   OSUP_BM_KV_PARSE_STRING("AudioFilename: ", general.audioFilename);
@@ -290,7 +294,7 @@ OSUP_INTERN osup_bool osup_bm_parse_general_line(osup_bm_ctx* ctx,
     OSUP_BM_KV_CHECK_STRING_ENUM(general.sampleSet, "Drum",
                                  OSUP_SAMPLESET_DRUM);
     OSUP_BM_ERROR("invalid SampleSet option: %s",
-               osup_temp_string_slice(valueBegin, valueEnd));
+                  osup_temp_string_slice(valueBegin, valueEnd));
     return osup_false;
   }
 
@@ -303,17 +307,20 @@ OSUP_INTERN osup_bool osup_bm_parse_general_line(osup_bm_ctx* ctx,
     OSUP_BM_KV_CHECK_STRING_ENUM(general.overlayPosition, "Above",
                                  OSUP_OVERLAYPOS_ABOVE);
     OSUP_BM_ERROR("invalid OverlayPosition option: %s",
-               osup_temp_string_slice(valueBegin, valueEnd));
+                  osup_temp_string_slice(valueBegin, valueEnd));
     return osup_false;
   }
 
   OSUP_BM_ERROR("invalid line in [General] section: %s",
-             osup_temp_string_slice_line_terminated(*line));
+                osup_temp_string_slice_line_terminated(*line));
   return osup_false;
 }
 
 OSUP_INTERN osup_bool osup_bm_parse_editor_line(osup_bm_ctx* ctx,
                                                 const char** line) {
+  if (!(ctx->parseFlags & OSUP_PARSE_EDITOR)) {
+    return osup_advance_to_next_line(line, osup_false);
+  }
   OSUP_BM_KV_PARSE_DECIMAL("DistanceSpacing: ", editor.distanceSpacing);
   OSUP_BM_KV_PARSE_DECIMAL("BeatDivisor: ", editor.beatDivisor);
   OSUP_BM_KV_PARSE_DECIMAL("TimelineZoom: ", editor.timelineZoom);
@@ -340,7 +347,7 @@ OSUP_INTERN osup_bool osup_bm_parse_editor_line(osup_bm_ctx* ctx,
       if (!osup_parse_int(elementBegin, elementEnd,
                           &ctx->map->editor.bookmarks.elements[index])) {
         OSUP_BM_ERROR("invalid Bookmark value: %s",
-                   osup_temp_string_slice(elementBegin, elementEnd));
+                      osup_temp_string_slice(elementBegin, elementEnd));
         return osup_false;
       }
     }
@@ -348,12 +355,15 @@ OSUP_INTERN osup_bool osup_bm_parse_editor_line(osup_bm_ctx* ctx,
   }
 
   OSUP_BM_ERROR("invalid [Editor] line: %s",
-             osup_temp_string_slice_line_terminated(*line));
+                osup_temp_string_slice_line_terminated(*line));
   return osup_false;
 }
 
 OSUP_INTERN osup_bool osup_bm_parse_metadata_line(osup_bm_ctx* ctx,
                                                   const char** line) {
+  if (!(ctx->parseFlags & OSUP_PARSE_METADATA)) {
+    return osup_advance_to_next_line(line, osup_false);
+  }
   OSUP_BM_KV_PARSE_STRING("Title:", metadata.title);
   OSUP_BM_KV_PARSE_STRING("TitleUnicode:", metadata.titleUnicode);
   OSUP_BM_KV_PARSE_STRING("Artist:", metadata.artist);
@@ -371,7 +381,7 @@ OSUP_INTERN osup_bool osup_bm_parse_metadata_line(osup_bm_ctx* ctx,
     char* tagsEnd = valueEnd - valueBegin + tags;
     if (!osup_strdup(valueBegin, valueEnd, &tags)) {
       OSUP_BM_ERROR("osup_strdup returns false, malloc length: %zu",
-                 (size_t)(valueEnd - valueBegin));
+                    (size_t)(valueEnd - valueBegin));
       return osup_false;
     }
     /* since beatmap tags is a space-separated list of strings, we can just
@@ -392,7 +402,7 @@ OSUP_INTERN osup_bool osup_bm_parse_metadata_line(osup_bm_ctx* ctx,
     ctx->map->metadata.tags.count = tagCount;
     if (!ctx->map->metadata.tags.elements) {
       OSUP_BM_ERROR("malloc returns NULL, malloc size: %zu",
-                 tagCount * sizeof(char*));
+                    tagCount * sizeof(char*));
       return osup_false;
     }
 
@@ -412,12 +422,15 @@ OSUP_INTERN osup_bool osup_bm_parse_metadata_line(osup_bm_ctx* ctx,
   }
 
   OSUP_BM_ERROR("invalid [Metadata] line: %s",
-             osup_temp_string_slice_line_terminated(*line));
+                osup_temp_string_slice_line_terminated(*line));
   return osup_false;
 }
 
 OSUP_INTERN osup_bool osup_bm_parse_difficulty_line(osup_bm_ctx* ctx,
                                                     const char** line) {
+  if (!(ctx->parseFlags & OSUP_PARSE_DIFFICULTY)) {
+    return osup_advance_to_next_line(line, osup_false);
+  }
   OSUP_BM_KV_PARSE_DECIMAL("HPDrainRate:", difficulty.hpDrainRate);
   OSUP_BM_KV_PARSE_DECIMAL("CircleSize:", difficulty.circleSize);
   OSUP_BM_KV_PARSE_DECIMAL("OverallDifficulty:", difficulty.overallDifficulty);
@@ -425,13 +438,19 @@ OSUP_INTERN osup_bool osup_bm_parse_difficulty_line(osup_bm_ctx* ctx,
   OSUP_BM_KV_PARSE_DECIMAL("SliderMultiplier:", difficulty.sliderMultiplier);
   OSUP_BM_KV_PARSE_DECIMAL("SliderTickRate:", difficulty.sliderTickRate);
   OSUP_BM_ERROR("invalid [Difficulty] line: %s",
-             osup_temp_string_slice_line_terminated(*line));
+                osup_temp_string_slice_line_terminated(*line));
   return osup_false;
 }
 
 OSUP_INTERN osup_bool osup_bm_parse_events_line(osup_bm_ctx* ctx,
                                                 const char** line,
                                                 osup_event* event) {
+#if 0
+  /* already handled in osup_bm_nextline() */
+  if (!(ctx->parseFlags & OSUP_PARSE_EVENTS)) {
+    return osup_advance_to_next_line(line, osup_false);
+  }
+#endif
   /* this line is a comma-separated line, so we need to split and process it */
   const char* elementBegin = NULL;
   const char* elementEnd = *line - 1;
@@ -439,7 +458,7 @@ OSUP_INTERN osup_bool osup_bm_parse_events_line(osup_bm_ctx* ctx,
   /* get first token from line */
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd)) {
     OSUP_BM_ERROR("couldn't get event type from [Events] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
 
@@ -457,7 +476,7 @@ OSUP_INTERN osup_bool osup_bm_parse_events_line(osup_bm_ctx* ctx,
           break;
         default:
           OSUP_BM_ERROR("invalid/unsupported event type: %s",
-                     osup_temp_string_slice(elementBegin, elementEnd));
+                        osup_temp_string_slice(elementBegin, elementEnd));
           return osup_false;
       }
       break;
@@ -470,19 +489,19 @@ OSUP_INTERN osup_bool osup_bm_parse_events_line(osup_bm_ctx* ctx,
         break;
       } else {
         OSUP_BM_ERROR("invalid/unsupported event type: %s",
-                   osup_temp_string_slice(elementBegin, elementEnd));
+                      osup_temp_string_slice(elementBegin, elementEnd));
         return osup_false;
       }
     default:
       OSUP_BM_ERROR("invalid/unsupported event type: %s",
-                 osup_temp_string_slice(elementBegin, elementEnd));
+                    osup_temp_string_slice(elementBegin, elementEnd));
       return osup_false;
   }
 
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_int(elementBegin, elementEnd, &event->startTime)) {
     OSUP_BM_ERROR("couldn't get start time from [Events] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   };
 
@@ -521,14 +540,14 @@ OSUP_INTERN osup_bool osup_bm_parse_events_line(osup_bm_ctx* ctx,
       if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
           !osup_parse_int(elementBegin, elementEnd, &event->brk.endTime)) {
         OSUP_BM_ERROR("couldn't get end time from break [Events] line: %s",
-                   osup_temp_string_slice_line_terminated(*line));
+                      osup_temp_string_slice_line_terminated(*line));
         return osup_false;
       };
       /* there should be no leftover tokens */
       *line = elementEnd;
       if (!osup_advance_to_next_line(line, osup_true)) {
         OSUP_BM_ERROR("unexpected token(s) in [Events] line: %s",
-                   osup_temp_string_slice_line_terminated(*line));
+                      osup_temp_string_slice_line_terminated(*line));
         return osup_false;
       } else {
         return osup_true;
@@ -538,31 +557,37 @@ OSUP_INTERN osup_bool osup_bm_parse_events_line(osup_bm_ctx* ctx,
 
 OSUP_INTERN osup_bool osup_bm_parse_timing_points_line(
     osup_bm_ctx* ctx, const char** line, osup_timingpoint* timingpoint) {
+#if 0
+  /* already handled in osup_bm_nextline() */
+  if (!(ctx->parseFlags & OSUP_PARSE_TIMING_POINTS)) {
+    return osup_advance_to_next_line(line, osup_false);
+  }
+#endif
   const char* elementBegin = NULL;
   const char* elementEnd = *line - 1;
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_int(elementBegin, elementEnd, &timingpoint->time)) {
     OSUP_BM_ERROR("couldn't get time from [TimingPoints] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_decimal(elementBegin, elementEnd, &timingpoint->beatLength)) {
     OSUP_BM_ERROR("couldn't get beat length from [TimingPoints] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_int(elementBegin, elementEnd, &timingpoint->meter)) {
     OSUP_BM_ERROR("couldn't get meter value from [TimingPoints] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   osup_int sampleSetValue;
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_int(elementBegin, elementEnd, &sampleSetValue)) {
     OSUP_BM_ERROR("couldn't get sample set from [TimingPoints] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   if (sampleSetValue < OSUP_SAMPLESET_DEFAULT &&
@@ -574,31 +599,31 @@ OSUP_INTERN osup_bool osup_bm_parse_timing_points_line(
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_int(elementBegin, elementEnd, &timingpoint->sampleIndex)) {
     OSUP_BM_ERROR("couldn't get sample index from [TimingPoints] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_int(elementBegin, elementEnd, &timingpoint->volume)) {
     OSUP_BM_ERROR("couldn't get volume from [TimingPoints] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_bool(elementBegin, elementEnd, &timingpoint->uninherited)) {
     OSUP_BM_ERROR("couldn't get uninherited value from [TimingPoints] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_ubyte(elementBegin, elementEnd, &timingpoint->effects)) {
     OSUP_BM_ERROR("couldn't get effects from [TimingPoints] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   *line = elementEnd;
   if (!osup_advance_to_next_line(line, osup_true)) {
     OSUP_BM_ERROR("unexpected token(s) in [TimingPoints] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   } else {
     return osup_true;
@@ -607,6 +632,9 @@ OSUP_INTERN osup_bool osup_bm_parse_timing_points_line(
 
 OSUP_INTERN osup_bool osup_bm_parse_colors_line(osup_bm_ctx* ctx,
                                                 const char** line) {
+  if (!(ctx->parseFlags & OSUP_PARSE_COLORS)) {
+    return osup_advance_to_next_line(line, osup_false);
+  }
   OSUP_BM_KV_PARSE_RGB("SliderTrackOverride : ", colors.sliderTrackOverride);
   OSUP_BM_KV_PARSE_RGB("SliderBorder : ", colors.sliderBorder);
   if (osup_check_prefix_and_advance(line, "Combo")) {
@@ -645,7 +673,7 @@ OSUP_INTERN osup_bool osup_bm_parse_colors_line(osup_bm_ctx* ctx,
 
   if (!osup_advance_to_next_line(line, osup_true)) {
     OSUP_BM_ERROR("unexpected token(s) in [Colours] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   } else {
     return osup_true;
@@ -655,36 +683,42 @@ OSUP_INTERN osup_bool osup_bm_parse_colors_line(osup_bm_ctx* ctx,
 OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
                                                      const char** line,
                                                      osup_hitobject* value) {
+#if 0
+  /* already handled in osup_bm_nextline() */
+  if (!(ctx->parseFlags & OSUP_PARSE_HIT_OBJECTS)) {
+    return osup_advance_to_next_line(line, osup_false);
+  }
+#endif
   const char* elementBegin = NULL;
   const char* elementEnd = *line - 1;
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_int(elementBegin, elementEnd, &value->x)) {
     OSUP_BM_ERROR("couldn't get x value from [HitObjects] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_int(elementBegin, elementEnd, &value->y)) {
     OSUP_BM_ERROR("couldn't get y value from [HitObjects] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_int(elementBegin, elementEnd, &value->time)) {
     OSUP_BM_ERROR("couldn't get time value from [HitObjects] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_ubyte(elementBegin, elementEnd, &value->type)) {
     OSUP_BM_ERROR("couldn't get type of hit object from [HitObjects] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   if (!osup_split_string_line_terminated(',', &elementBegin, &elementEnd) ||
       !osup_parse_ubyte(elementBegin, elementEnd, &value->hitSound)) {
     OSUP_BM_ERROR("couldn't get hitsound value from [HitObjects] line: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   *line = elementEnd;
@@ -716,8 +750,8 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
         value->slider.curveType = OSUP_CURVE_PERFECT_CIRCLE;
         break;
       default:
-        OSUP_BM_ERROR("invalid slider curve type: %c (value: %d)", curveTypeChar,
-                   (unsigned)curveTypeChar);
+        OSUP_BM_ERROR("invalid slider curve type: %c (value: %d)",
+                      curveTypeChar, (unsigned)curveTypeChar);
         return osup_false;
     }
 
@@ -736,7 +770,7 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
           malloc(curvePointCount * sizeof(osup_vec2));
       if (!value->slider.curvePoints.elements) {
         OSUP_BM_ERROR("malloc returns NULL, malloc size: %zu",
-                   curvePointCount * sizeof(osup_vec2));
+                      curvePointCount * sizeof(osup_vec2));
         return osup_false;
       }
       value->slider.curvePoints.count = curvePointCount;
@@ -748,12 +782,12 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
             !osup_parse_int_until_nondigit_char(
                 line, &value->slider.curvePoints.elements[index].y)) {
           OSUP_BM_ERROR("parsing curve point error (line: %s)",
-                     osup_temp_string_slice_line_terminated(*line));
+                        osup_temp_string_slice_line_terminated(*line));
           return osup_false;
         }
         if (**line != ',' && **line != '|') {
           OSUP_BM_ERROR("expected ',' or '|': %s",
-                     osup_temp_string_slice_line_terminated(*line));
+                        osup_temp_string_slice_line_terminated(*line));
           return osup_false;
         }
         ++(*line);
@@ -763,14 +797,15 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
       ++(*line);
     } else {
       OSUP_BM_ERROR("expected ',' or '|': %s",
-                 osup_temp_string_slice_line_terminated(*line));
+                    osup_temp_string_slice_line_terminated(*line));
       return osup_false;
     }
 
     if (!osup_parse_int_until_nondigit_char(line, &value->slider.slides) ||
         *((*line)++) != ',') {
-      OSUP_BM_ERROR("couldn't get slide count from slider [HitObjects] line: %s",
-                 osup_temp_string_slice_line_terminated(*line));
+      OSUP_BM_ERROR(
+          "couldn't get slide count from slider [HitObjects] line: %s",
+          osup_temp_string_slice_line_terminated(*line));
       return osup_false;
     }
     /* i'm too lazy to make a osup_parse_decimal_until_nondigit_char*/
@@ -785,7 +820,7 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
     }
     if (!osup_parse_decimal(*line, valueEnd, &value->slider.length)) {
       OSUP_BM_ERROR("couldn't get slider length from [HitObjects] line: %s",
-                 osup_temp_string_slice_line_terminated(*line));
+                    osup_temp_string_slice_line_terminated(*line));
       return osup_false;
     }
     *line = valueEnd + 1;
@@ -806,7 +841,7 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
         malloc(edgeSoundCount * sizeof(osup_int));
     if (!value->slider.edgeSounds.elements) {
       OSUP_BM_ERROR("malloc returns NULL, malloc size: %zu",
-                 edgeSoundCount * sizeof(osup_int));
+                    edgeSoundCount * sizeof(osup_int));
       return osup_false;
     }
     value->slider.edgeSounds.count = edgeSoundCount;
@@ -816,12 +851,12 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
       if (!osup_parse_int_until_nondigit_char(
               line, &value->slider.edgeSounds.elements[index])) {
         OSUP_BM_ERROR("parsing slider edge sound error: %s",
-                   osup_temp_string_slice_line_terminated(*line));
+                      osup_temp_string_slice_line_terminated(*line));
         return osup_false;
       }
       if (**line != ',' && **line != '|') {
         OSUP_BM_ERROR("expected ',' or '|': %s",
-                   osup_temp_string_slice_line_terminated(*line));
+                      osup_temp_string_slice_line_terminated(*line));
         return osup_false;
       }
       ++(*line);
@@ -843,7 +878,7 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
         malloc(edgeSetCount * sizeof(*value->slider.edgeSets.elements));
     if (!value->slider.edgeSets.elements) {
       OSUP_BM_ERROR("malloc returns NULL, malloc size: %zu",
-                 edgeSoundCount * sizeof(*value->slider.edgeSets.elements));
+                    edgeSoundCount * sizeof(*value->slider.edgeSets.elements));
       return osup_false;
     }
     value->slider.edgeSets.count = edgeSetCount;
@@ -855,12 +890,12 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
           !osup_parse_int_until_nondigit_char(
               line, &value->slider.edgeSets.elements[index].additionSet)) {
         OSUP_BM_ERROR("parsing slider edge sample set error: %s",
-                   osup_temp_string_slice_line_terminated(*line));
+                      osup_temp_string_slice_line_terminated(*line));
         return osup_false;
       }
       if (**line != ',' && **line != '|') {
         OSUP_BM_ERROR("expected ',' or '|': %s",
-                   osup_temp_string_slice_line_terminated(*line));
+                      osup_temp_string_slice_line_terminated(*line));
         return osup_false;
       }
       ++(*line);
@@ -870,13 +905,13 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
     /* same structure, a little bit different syntax */
     if (!osup_parse_int_until_nondigit_char(line, &value->spinner.endTime)) {
       OSUP_BM_ERROR("parsing spinner/mania-hold end time error: %s",
-                 osup_temp_string_slice_line_terminated(*line));
+                    osup_temp_string_slice_line_terminated(*line));
       return osup_false;
     }
 
     if (OSUP_IS_SPINNER(value->type) ? **line != ',' : **line != ':') {
       OSUP_BM_ERROR("expected ',' (for spinner) or ':' (for mania hold): %s",
-                 osup_temp_string_slice_line_terminated(*line));
+                    osup_temp_string_slice_line_terminated(*line));
       return osup_false;
     }
 
@@ -892,27 +927,27 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
   if (!osup_parse_int_until_nondigit_char(line, &i) || *((*line)++) != ':' ||
       i < OSUP_SAMPLESET_DEFAULT || i > OSUP_SAMPLESET_DRUM) {
     OSUP_BM_ERROR("unable to parse normat set hit sample: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   value->hitSample.normalSet = i;
   if (!osup_parse_int_until_nondigit_char(line, &i) || *((*line)++) != ':' ||
       i < OSUP_SAMPLESET_DEFAULT || i > OSUP_SAMPLESET_DRUM) {
     OSUP_BM_ERROR("unable to parse addition set hit sample: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   value->hitSample.additionSet = i;
   if (!osup_parse_int_until_nondigit_char(line, &value->hitSample.index) ||
       *((*line)++) != ':') {
     OSUP_BM_ERROR("unable to parse hit sample index: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
   if (!osup_parse_int_until_nondigit_char(line, &value->hitSample.volume) ||
       *((*line)++) != ':') {
     OSUP_BM_ERROR("unable to parse hit sample volume: %s",
-               osup_temp_string_slice_line_terminated(*line));
+                  osup_temp_string_slice_line_terminated(*line));
     return osup_false;
   }
 
@@ -922,7 +957,7 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
   if (*filenameBegin == '"') {
     if (*filenameEnd != '"' || filenameEnd) {
       OSUP_BM_ERROR("unclosed quotes: %s",
-                 osup_temp_string_slice_line_terminated(*line));
+                    osup_temp_string_slice_line_terminated(*line));
       return osup_false;
     } else {
       ++filenameBegin;
@@ -933,7 +968,7 @@ OSUP_INTERN osup_bool osup_bm_parse_hit_objects_line(osup_bm_ctx* ctx,
   }
   if (!osup_strdup(filenameBegin, filenameEnd, &value->hitSample.filename)) {
     OSUP_BM_ERROR("osup_strdup returns false, malloc length: %zu",
-               filenameEnd - filenameBegin);
+                  filenameEnd - filenameBegin);
     return osup_false;
   } else {
     return osup_true;
@@ -951,7 +986,7 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
       } else {
         /* unexpected syntax */
         OSUP_BM_ERROR("invalid syntax: %s",
-                   osup_temp_string_slice_line_terminated(*line));
+                      osup_temp_string_slice_line_terminated(*line));
         return osup_false;
       }
     case '\r':
@@ -996,7 +1031,7 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
       }
 
       OSUP_BM_ERROR("invalid section header: %s",
-                 osup_temp_string_slice_line_terminated(*line));
+                    osup_temp_string_slice_line_terminated(*line));
       return osup_false;
     default:
       switch (ctx->section) {
@@ -1009,6 +1044,9 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
         case OSUP_BM_SECTION_DIFFICULTY:
           return osup_bm_parse_difficulty_line(ctx, line);
         case OSUP_BM_SECTION_EVENTS: {
+          if (!(ctx->parseFlags & OSUP_PARSE_EVENTS)) {
+            return osup_advance_to_next_line(line, osup_false);
+          }
           osup_bm_events* events = &ctx->map->events;
           if (events->count >= ctx->eventCapacity) {
             ctx->eventCapacity = (size_t)((events->count + 1) * 1.5);
@@ -1016,7 +1054,7 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
                 events->elements, ctx->eventCapacity * sizeof(osup_event));
             if (!newEvent) {
               OSUP_BM_ERROR("malloc returns NULL, malloc size: %zu",
-                         ctx->eventCapacity * sizeof(osup_event));
+                            ctx->eventCapacity * sizeof(osup_event));
               return osup_false;
             }
             events->elements = newEvent;
@@ -1033,6 +1071,9 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
         }
 
         case OSUP_BM_SECTION_TIMING_POINTS: {
+          if (!(ctx->parseFlags & OSUP_PARSE_TIMING_POINTS)) {
+            return osup_advance_to_next_line(line, osup_false);
+          }
           osup_bm_timingpoints* timingpoints = &ctx->map->timingPoints;
           if (timingpoints->count >= ctx->timingpointCapacity) {
             ctx->timingpointCapacity =
@@ -1041,8 +1082,9 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
                 realloc(timingpoints->elements,
                         ctx->timingpointCapacity * sizeof(osup_timingpoint));
             if (!newTimingPoints) {
-              OSUP_BM_ERROR("malloc returns NULL, malloc size: %zu",
-                         ctx->timingpointCapacity * sizeof(osup_timingpoint));
+              OSUP_BM_ERROR(
+                  "malloc returns NULL, malloc size: %zu",
+                  ctx->timingpointCapacity * sizeof(osup_timingpoint));
               return osup_false;
             }
             timingpoints->elements = newTimingPoints;
@@ -1059,6 +1101,9 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
         case OSUP_BM_SECTION_COLORS:
           return osup_bm_parse_colors_line(ctx, line);
         case OSUP_BM_SECTION_HIT_OBJECTS: {
+          if (!(ctx->parseFlags & OSUP_PARSE_HIT_OBJECTS)) {
+            return osup_advance_to_next_line(line, osup_false);
+          }
           osup_bm_hitobjects* hitObjects = &ctx->map->hitObjects;
           if (hitObjects->count >= ctx->hitObjectCapacity) {
             ctx->hitObjectCapacity = (size_t)((hitObjects->count + 1) * 1.5);
@@ -1067,13 +1112,14 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
                         ctx->hitObjectCapacity * sizeof(osup_hitobject));
             if (!newHitObjects) {
               OSUP_BM_ERROR("malloc returns NULL, malloc size: %zu",
-                         ctx->hitObjectCapacity * sizeof(osup_hitobject));
+                            ctx->hitObjectCapacity * sizeof(osup_hitobject));
               return osup_false;
             }
             hitObjects->elements = newHitObjects;
           }
           osup_hitobject* hitObject = &hitObjects->elements[hitObjects->count];
-          /* hitObject may contains a pointer, so we should initialize it to NULL */
+          /* hitObject may contains a pointer, so we should initialize it to
+           * NULL */
           memset(hitObject, 0, sizeof(*hitObject));
           if (osup_bm_parse_hit_objects_line(ctx, line, hitObject)) {
             hitObjects->count++;
@@ -1086,24 +1132,27 @@ OSUP_INTERN osup_bool osup_bm_nextline(osup_bm_ctx* ctx, const char** line) {
   }
 }
 
-OSUP_API osup_bool osup_beatmap_load(osup_bm* map, const char* file) {
+OSUP_API osup_bool osup_beatmap_load(osup_bm* map, const char* file,
+                                     osup_bitfield32 flags) {
   FILE* f = fopen(file, "r");
   if (!f) {
     OSUP_BM_ERROR("unable to read file %s", file);
     return osup_false;
   }
-  osup_bool ret = osup_beatmap_load_stream(map, f);
+  osup_bool ret = osup_beatmap_load_stream(map, f, flags);
   fclose(f);
   return ret;
 }
 
-OSUP_API osup_bool osup_beatmap_load_string(osup_bm* map, const char* string) {
+OSUP_API osup_bool osup_beatmap_load_string(osup_bm* map, const char* string,
+                                            osup_bitfield32 flags) {
   if (!strncmp(string, "osu file format v", sizeof("osu file format v") - 1)) {
     return osup_false;
   }
 
   osup_bm_ctx ctx = {};
   ctx.map = map;
+  ctx.parseFlags = flags;
 
   const char* versionBegin = string + sizeof("osu file format v") - 1;
   size_t i = 0;
@@ -1151,11 +1200,13 @@ success:
 
 OSUP_API osup_bool osup_beatmap_load_callbacks(osup_bm* map,
                                                osup_bm_callback callback,
-                                               void* ptr) {
+                                               void* ptr,
+                                               osup_bitfield32 flags) {
   return osup_true;
 }
 
-OSUP_API osup_bool osup_beatmap_load_stream(osup_bm* map, FILE* file) {
+OSUP_API osup_bool osup_beatmap_load_stream(osup_bm* map, FILE* file,
+                                            osup_bitfield32 flags) {
   OSUP_STORAGE size_t defaultBufSize = 32;
 
   char header[sizeof("osu file format v") - 1];
@@ -1167,6 +1218,7 @@ OSUP_API osup_bool osup_beatmap_load_stream(osup_bm* map, FILE* file) {
 
   osup_bm_ctx ctx = {};
   ctx.map = map;
+  ctx.parseFlags = flags;
 
   size_t i = 0;
   while (i < sizeof(ctx.version)) {
