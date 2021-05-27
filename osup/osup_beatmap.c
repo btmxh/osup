@@ -639,17 +639,10 @@ OSUP_INTERN osup_bool osup_bm_parse_colors_line(osup_bm_ctx* ctx,
   OSUP_BM_KV_PARSE_RGB("SliderBorder : ", colors.sliderBorder);
   if (osup_check_prefix_and_advance(line, "Combo")) {
     size_t combo = 0;
-    if (!isdigit(**line)) {
-      /* this will be gone soon */
+    if(**line >= '1' && **line <= '8') {
+      combo = **line - '1';
+    } else {
       OSUP_BM_ERROR("expected digit");
-      return osup_false;
-    }
-    while (isdigit(**line)) {
-      combo = combo * 10 + (**line - '0');
-      ++(*line);
-    }
-    if (combo > sizeof(ctx->map->colors.combos) / sizeof(osup_rgb) ||
-        combo == 0) {
       return osup_false;
     }
     osup_rgb value;
@@ -660,12 +653,12 @@ OSUP_INTERN osup_bool osup_bm_parse_colors_line(osup_bm_ctx* ctx,
 
     OSUP_BM_KV_GET_VALUE();
     if (!osup_parse_rgb(valueBegin, valueEnd,
-                        &ctx->map->colors.combos[combo - 1])) {
+                        &ctx->map->colors.combos[combo])) {
       OSUP_BM_ERROR("combo color parsing error, parsed string: %s", *line);
       return osup_false;
     } else {
-      if (ctx->map->colors.maxCombo < combo - 1) {
-        ctx->map->colors.maxCombo = combo - 1;
+      if (ctx->map->colors.maxCombo < combo) {
+        ctx->map->colors.maxCombo = combo;
       }
       return osup_true;
     }

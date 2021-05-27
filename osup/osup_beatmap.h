@@ -179,7 +179,7 @@ typedef struct {
   /* i'm not sure if there's a limit for the number of combo colors but it's
    * probably limited to 8 or sth, also this is 0-indexed, so Combo1 will be in
    * combos[0] */
-  osup_rgb combos[16];
+  osup_rgb combos[8];
   /* also 0-indexed */
   size_t maxCombo;
   osup_rgb sliderTrackOverride;
